@@ -1,0 +1,33 @@
+*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:#0b1020;color:#e8ecff}
+.container{max-width:1200px;margin:0 auto;padding:16px}
+header h1{margin:0 0 6px 0;font-size:28px}
+.muted{opacity:.8}.small{font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+.card{background:#111633;border:1px solid #1c244a;border-radius:16px;padding:16px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.card h2{margin:0 0 12px 0;font-size:18px}
+fieldset{border:1px solid #1f2856;border-radius:12px;margin:12px 0;padding:10px}
+legend{padding:0 6px;color:#9fb3ff}
+.row{display:flex;flex-direction:column;margin:8px 0}
+.row>label{font-size:13px;margin-bottom:6px;color:#c9d4ff}
+.row>input,.row>select{background:#0b1020;border:1px solid #2a3771;border-radius:10px;padding:10px;color:#e8ecff;outline:none}
+.row>input:focus,.row>select:focus{border-color:#5e7bff;box-shadow:0 0 0 3px rgba(94,123,255,.2)}
+.checkbox-row{flex-direction:row;align-items:center;gap:8px}
+.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{border-radius:10px;border:1px solid #2a3771;background:#141b3f;color:#e8ecff;padding:10px 14px;cursor:pointer;font-weight:600}
+button.primary{background:#5e7bff;border-color:#5e7bff;color:#0b1020}
+button.secondary{background:#18214d}
+button.ghost{background:transparent}
+button:disabled{opacity:.5;cursor:not-allowed}
+.summary{display:grid;gap:8px;margin-bottom:12px}
+.summary .kpi{background:#0b1020;border:1px solid #2a3771;border-radius:12px;padding:10px}
+.summary .kpi strong{font-size:18px}
+.mt{margin-top:12px}
+a{color:#9fb3ff}
+h4{margin:8px 0 4px 0}
+.hidden{display:none}
+.tbl{width:100%;border-collapse:collapse;margin-bottom:8px}
+.tbl th,.tbl td{border:1px solid #1f2856;padding:6px;text-align:left}
+.tbl th{background:#0f1633}
+.warn{color:#ffcc88}
