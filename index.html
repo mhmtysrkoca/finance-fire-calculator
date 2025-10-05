@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Erken Emeklilik Hesaplayıcı</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💸</text></svg>">
+  <meta name="description" content="Aylık harcama hedefi, SWR, sigorta fonu, çok varlıklı dağılım, esnek katkı takvimi, post-FI çalışma, çekim testi, max sürdürülebilir çekim, CAGR/IRR.">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="container">
+    <h1>Erken Emeklilik Hesaplayıcı</h1>
+    <p class="muted">
+      Emeklilikte <strong>aylık harcama hedefi</strong> (bugünün parasıyla) • <strong>SWR</strong> •
+      <strong>Sigorta fonu</strong> • <strong>Çok varlıklı dağılım</strong> (Gayrimenkul/Hisse/Kripto/Emtia/Eurobond) •
+      <strong>Esnek katkı takvimi</strong> • <strong>Post-FI çalışma</strong> •
+      <strong>Çekim & Güvenlik Testi</strong> • <strong>Maks. Aylık Çekim</strong> •
+      <strong>CSV</strong> • <strong>TWR CAGR/IRR</strong>
+    </p>
+  </header>
+
+  <main class="container grid">
+    <section class="card">
+      <h2>Parametreler</h2>
+      <form id="calc-form">
+        <fieldset>
+          <legend>Emeklilik Harcaması & SWR</legend>
+          <div class="row">
+            <label for="monthly_spending_today">Emeklilikte aylık harcama (bugünün parasıyla)</label>
+            <input id="monthly_spending_today" type="number" min="0" step="0.01" value="3000" required>
+          </div>
+          <div class="row">
+            <label for="passive_income_today">Aylık pasif gelir (bugünün parasıyla)</label>
+            <input id="passive_income_today" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div class="row">
+            <label for="swr">Sürdürülebilir çekim oranı (SWR, %)</label>
+            <input id="swr" type="number" min="0.1" max="10" step="0.1" value="4" required>
+          </div>
+          <div class="row">
+            <label for="inflation">Enflasyon (yıllık, %)</label>
+            <input id="inflation" type="number" min="0" step="0.1" value="2">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Sigorta / Güvenlik Fonu</legend>
+          <div class="row"><label for="start_capital_ins">Başlangıç tutarı</label><input id="start_capital_ins" type="number" min="0" step="0.01" value="5000"></div>
+          <div class="row"><label for="contrib_ins">Aylık katkı (varsayılan)</label><input id="contrib_ins" type="number" min="0" step="0.01" value="300"></div>
+          <div class="row"><label for="target_ins_today">Hedef tutar (bugünün parasıyla)</label><input id="target_ins_today" type="number" min="0" step="0.01" value="20000"></div>
+          <div class="row"><label for="return_ins">Yıllık getiri (%, sigorta)</label><input id="return_ins" type="number" min="-50" step="0.1" value="3"></div>
+          <div class="row checkbox-row">
+            <input id="redirect_after_ins" type="checkbox" checked>
+            <label for="redirect_after_ins">Sigorta hedefe ulaşınca aylık katkıyı emeklilik portföyüne aktar</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Emeklilik Portföyü (Toplam)</legend>
+          <div class="row"><label for="start_capital_ret">Başlangıç sermayesi (toplam)</label><input id="start_capital_ret" type="number" min="0" step="0.01" value="20000"></div>
+          <div class="row"><label for="contrib_ret">Aylık katkı (varsayılan)</label><input id="contrib_ret" type="number" min="0" step="0.01" value="1000"></div>
+          <div class="row"><label for="contrib_growth">Aylık katkı yıllık artışı (%)</label><input id="contrib_growth" type="number" min="0" step="0.1" value="0"></div>
+          <div class="row"><label for="max_years">Simülasyon ufku (yıl)</label><input id="max_years" type="number" min="1" max="100" step="1" value="60"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Esnek Katkı Takvimi (Opsiyonel)</legend>
+          <p class="small muted">Ör: “0–4 yıl ayda 1000 €, 5–9 yıl 1500 € …” Satır ekle ve doldur.</p>
+          <div class="sched">
+            <h4>Emeklilik Portföyü</h4>
+            <table class="tbl">
+              <thead><tr><th>Başlangıç yılı</th><th>Bitiş yılı (dahil)</th><th>Aylık katkı (€)</th><th></th></tr></thead>
+              <tbody id="ret-sched-body"></tbody>
+            </table>
+            <button type="button" class="secondary" id="add-ret-row">Satır ekle</button>
+          </div>
+          <div class="sched">
+            <h4>Sigorta Fonu</h4>
+            <table class="tbl">
+              <thead><tr><th>Başlangıç yılı</th><th>Bitiş yılı (dahil)</th><th>Aylık katkı (€)</th><th></th></tr></thead>
+              <tbody id="ins-sched-body"></tbody>
+            </table>
+            <button type="button" class="secondary" id="add-ins-row">Satır ekle</button>
+          </div>
+          <p class="small muted">Not: Takvim varsa, o yıllar için “varsayılan” katkıların yerine geçer.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Varlık Dağılımı (Emeklilik Portföyü içinde)</legend>
+          <div class="row">
+            <label for="alloc_mode">Dağılım modu</label>
+            <select id="alloc_mode">
+              <option value="percent" selected>Yüzde</option>
+              <option value="amount">Miktar</option>
+            </select>
+          </div>
+
+          <div class="grid grid-2">
+            <div>
+              <h4>Gayrimenkul</h4>
+              <div class="row alloc percent"><label for="w_re">Ağırlık (%)</label><input id="w_re" type="number" step="0.1" value="20"></div>
+              <div class="row alloc amount hidden"><label for="a0_re">Başlangıç (EUR)</label><input id="a0_re" type="number" step="0.01" value="4000"></div>
+              <div class="row alloc amount hidden"><label for="ac_re">Aylık katkı (EUR)</label><input id="ac_re" type="number" step="0.01" value="200"></div>
+              <div class="row"><label for="r_re">Yıllık getiri (%)</label><input id="r_re" type="number" step="0.1" value="5"></div>
+            </div>
+            <div>
+              <h4>Hisse</h4>
+              <div class="row alloc percent"><label for="w_eq">Ağırlık (%)</label><input id="w_eq" type="number" step="0.1" value="40"></div>
+              <div class="row alloc amount hidden"><label for="a0_eq">Başlangıç (EUR)</label><input id="a0_eq" type="number" step="0.01" value="8000"></div>
+              <div class="row alloc amount hidden"><label for="ac_eq">Aylık katkı (EUR)</label><input id="ac_eq" type="number" step="0.01" value="400"></div>
+              <div class="row"><label for="r_eq">Yıllık getiri (%)</label><input id="r_eq" type="number" step="0.1" value="7"></div>
+            </div>
+            <div>
+              <h4>Kripto</h4>
+              <div class="row alloc percent"><label for="w_cr">Ağırlık (%)</label><input id="w_cr" type="number" step="0.1" value="15"></div>
+              <div class="row alloc amount hidden"><label for="a0_cr">Başlangıç (EUR)</label><input id="a0_cr" type="number" step="0.01" value="3000"></div>
+              <div class="row alloc amount hidden"><label for="ac_cr">Aylık katkı (EUR)</label><input id="ac_cr" type="number" step="0.01" value="150"></div>
+              <div class="row"><label for="r_cr">Yıllık getiri (%)</label><input id="r_cr" type="number" step="0.1" value="15"></div>
+            </div>
+            <div>
+              <h4>Emtia</h4>
+              <div class="row alloc percent"><label for="w_cm">Ağırlık (%)</label><input id="w_cm" type="number" step="0.1" value="10"></div>
+              <div class="row alloc amount hidden"><label for="a0_cm">Başlangıç (EUR)</label><input id="a0_cm" type="number" step="0.01" value="2000"></div>
+              <div class="row alloc amount hidden"><label for="ac_cm">Aylık katkı (EUR)</label><input id="ac_cm" type="number" step="0.01" value="100"></div>
+              <div class="row"><label for="r_cm">Yıllık getiri (%)</label><input id="r_cm" type="number" step="0.1" value="4"></div>
+            </div>
+            <div>
+              <h4>Eurobond</h4>
+              <div class="row alloc percent"><label for="w_eb">Ağırlık (%)</label><input id="w_eb" type="number" step="0.1" value="15"></div>
+              <div class="row alloc amount hidden"><label for="a0_eb">Başlangıç (EUR)</label><input id="a0_eb" type="number" step="0.01" value="3000"></div>
+              <div class="row alloc amount hidden"><label for="ac_eb">Aylık katkı (EUR)</label><input id="ac_eb" type="number" step="0.01" value="150"></div>
+              <div class="row"><label for="r_eb">Yıllık getiri (%)</label><input id="r_eb" type="number" step="0.1" value="6"></div>
+            </div>
+          </div>
+          <p class="small muted">Yüzde modunda toplam %100 olmalı. Miktar modunda toplamlar “toplam başlangıç/katkı” ile uyumlu olmalı.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Emeklilik Sonrası Çalışma (Post-FI)</legend>
+          <div class="row"><label for="post_work_years">FI sonrası çalışma süresi (yıl)</label><input id="post_work_years" type="number" min="0" step="1" value="0"></div>
+          <div class="row"><label for="post_work_contrib">Bu sürede portföye aylık net katkı (€)</label><input id="post_work_contrib" type="number" min="0" step="0.01" value="0"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Emeklilik Çekim & Güvenlik Testi</legend>
+          <div class="row checkbox-row">
+            <input id="enable_drawdown" type="checkbox">
+            <label for="enable_drawdown">FI (ve varsa Post-FI) sonrası çekim simülasyonunu çalıştır</label>
+          </div>
+          <div class="row"><label for="dd_horizon">Çekim ufku (yıl)</label><input id="dd_horizon" type="number" min="1" step="1" value="35"></div>
+          <div class="row"><label for="dd_index_infl">Enflasyona endeksli çekim</label>
+            <select id="dd_index_infl">
+              <option value="yes" selected>Evet (gerçek alım gücü sabit)</option>
+              <option value="no">Hayır (nominal sabit tutar)</option>
+            </select>
+          </div>
+          <div class="row"><label for="dd_withdraw_today">Aylık çekim (bugünün parasıyla) — boş bırakırsan maksimumu bulurum</label><input id="dd_withdraw_today" type="number" min="0" step="0.01" placeholder="Örn. 2500"></div>
+          <div class="row"><label for="dd_return_mode">Çekim dönemi beklenen getiri</label>
+            <select id="dd_return_mode">
+              <option value="auto" selected>Otomatik (son dağılımdan ağırlık ort.)</option>
+              <option value="manual">Manuel gir</option>
+            </select>
+          </div>
+          <div class="row"><label for="dd_return_manual">Manuel yıllık getiri (%)</label><input id="dd_return_manual" type="number" step="0.1" value="5"></div>
+          <div class="row"><label for="dd_stress">Stres testi (getiriden puan düş)</label><input id="dd_stress" type="number" step="0.5" value="2"></div>
+          <p class="small muted">Sonuçlarda: sürdürülebilirlik ve (boş bırakırsan) **maks. sürdürülebilir aylık çekim** (bugünün parasıyla) + stres senaryosu raporlanır.</p>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" class="primary">Hesapla</button>
+          <button type="button" id="reset-btn" class="ghost">Sıfırla</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Sonuçlar</h2>
+      <div id="summary" class="summary"></div>
+      <canvas id="chart" height="280" aria-label="Grafik"></canvas>
+      <div class="actions">
+        <button id="download-csv" class="secondary" disabled>CSV İndir</button>
+        <button id="share-link" class="ghost" disabled>Link Oluştur</button>
+      </div>
+      <details class="mt">
+        <summary>Hesaplama Notları</summary>
+        <ul>
+          <li>Gereken emeklilik portföyü (reel): <em>(Harcama − Pasif) × 12 / SWR</em>.</li>
+          <li>Nominale dönüşüm: enflasyonun aylığa indirgenmesi. Portföyler aylık bileşir.</li>
+          <li>Varlık katkıları dağılıma göre eklenir (otomatik rebalance yok).</li>
+          <li>Post-FI sürede (varsa) çekim yok; sadece belirtilen katkı büyütür; ardından çekim simülasyonu başlar.</li>
+          <li>Getiri metrikleri: <strong>TWR CAGR</strong> (zaman ağırlıklı) ve <strong>IRR (XIRR)</strong> (para ağırlıklı).</li>
+          <li>Çekim testi: ufuk boyunca bakiye negatife düşmezse sürdürülebilir kabul edilir. Maks çekim ikili arama ile bulunur.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="container muted small">
+    © 2025 — MIT Lisansı. GitHub Pages ile yayınlanabilir.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="assets/script.js"></script>
+</body>
+</html>
